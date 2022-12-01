@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 #plt.rcParams['text.usetex'] = True
 import discretization
 
+def u(x,eps):
+    return (np.exp(x/eps - np.exp(1/eps)))/(1 - np.exp(1/eps))
+
 def test():
     """
     A function to test the function simpleSolve from discretization.py
@@ -42,6 +45,13 @@ def investigateEpsilons():
         plt.plot(x,u, label = r"$\epsilon = {:2f}$".format(eps))
     plt.legend()
     plt.show()
+    return
+
+def investigateAccuracy():
+    """
+    A function to make plots of the accuracy of the numerical solution for different N and eps values
+    This is exercise 2.
+    """
     return
 
 if __name__=="__main__":
