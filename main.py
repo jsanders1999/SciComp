@@ -27,7 +27,7 @@ def investigateEpsilons():
     This is exercise 1.
     """
     #Define constants
-    N = 1000                        #The number of grid points
+    N = int(1e3)                    #The number of grid points
     eps_arr = np.logspace(-4,0,9)   #An array of epsilon parameters to solve the differential equation with
     BC = [1, 0]                     #The boundary conditions at x=0 and x=1
 

@@ -69,5 +69,5 @@ def simpleSolve(N, eps, BC = [0,0]):
     u = np.zeros(N)
     u[0] = BC[0]
     u[-1] = BC[1]
-    u[1:-1] = sp.sparse.linalg.inv(A(N,eps)).dot(f(N,eps,BC))
+    u[1:-1] = sp.sparse.linalg.spsolve(A(N,eps), f(N,eps,BC)) #sp.sparse.linalg.inv(A(N,eps)).dot(f(N,eps,BC))
     return u
