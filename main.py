@@ -65,8 +65,39 @@ def investigateAccuracy():
             print ("{:<5} {:<5} {:<25} {:<10}".format(eps,N,error,h))
     return refSoly, numSoly
 
+def Inverse():
+    """ Function to inspect the properties of matrix Ah"""
+    N = 8
+    h = 1/N
+    eps = 0.5
+    matrixInverse = sp.sparse.linalg.inv(discretization.A(N,eps))
+    matrixInverse = sp.sparse.csr_matrix.toarray(matrixInverse)
+    
+    print("All entries are >= 0 : ", np.all(matrixInverse>=0))
+    return MatrixInverse
+
+def Eigenvalues():
+    N = 8
+    h = 1/N
+    eps = 0.5
+    Ah  = discretization.A(N,eps)
+    
+    print(Ah)
+    eigsInfo = sp.linalg.eig(sp.sparse.csr_matrix.toarray(Ah))
+    print(eigsInfo)
+    for i in range(len(eigsInfo[0])):
+                   eigenvalue  = eigsInfo[0][i]
+                   eigenvector = eigsInfo[1][i]
+                   plt.plot(eigenvector,'ko')
+                   stringTitle = "Eigenvalue = " + str(eigenvalue)
+                   plt.title(stringTitle)
+                   plt.show()
+    Ah  = sp.sparse.csr_matrix.toarray(Ah)
+    return Ah,eigsInfo
+
 if __name__=="__main__":
-    print("Ricky moet adten")
-    #Test()
-    investigateEpsilons()
-    investigateAccuracy()
+    print("Ricky moet adten en Julian adt mee")
+    #investigateEpsilons()
+    #investigateAccuracy()
+    #Inverse()
+    Ah, Test = Eigenvalues()
