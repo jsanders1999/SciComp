@@ -20,8 +20,8 @@ def A(N, eps):
     """
 
     h = 1/N
-    L = 1/h**2*( 2*sp.sparse.eye(N-2, format='csc') - sp.sparse.eye(N-2, k=1, format='csc') - sp.sparse.eye(N-2, k=-1, format='csc') )
-    D = 1/h*( sp.sparse.eye(N-2, format='csc') - sp.sparse.eye(N-2, k=-1, format='csc') )
+    L = 1/h**2*( 2*sp.sparse.eye(N-1, format='csc') - sp.sparse.eye(N-1, k=1, format='csc') - sp.sparse.eye(N-1, k=-1, format='csc') )
+    D = 1/h*( sp.sparse.eye(N-1, format='csc') - sp.sparse.eye(N-1, k=-1, format='csc') )
     return eps*L + D
 
 
@@ -42,7 +42,7 @@ def f(N, eps, BC = [0,0]):
         The discretization vector
     """
     h = 1/N
-    res = np.zeros(N-2)
+    res = np.zeros(N-1)
     res[0]  +=  BC[0]*(eps/h**2+1/h)
     res[-1] +=  BC[1]*(eps/h**2)
     return res
@@ -66,8 +66,13 @@ def simpleSolve(N, eps, BC = [0,0]):
     array of floats (dim: N)
         The numerical solution of the differential equation, with boundary values included
     """
-    u = np.zeros(N)
+    u = np.zeros(N+1)
     u[0] = BC[0]
     u[-1] = BC[1]
     u[1:-1] = sp.sparse.linalg.spsolve(A(N,eps), f(N,eps,BC)) #sp.sparse.linalg.inv(A(N,eps)).dot(f(N,eps,BC))
     return u
+
+def refSol(N,eps):
+    x   = np.linspace(0,1,N+1)
+    y   = (np.exp(x/eps) - np.exp(1/eps))/(1-np.exp(1/eps))
+    return x,y

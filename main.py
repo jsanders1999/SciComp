@@ -18,7 +18,7 @@ def test():
     #print(A(N, eps))
     #print(g(N, eps, BC))
     #print(simpleSolve(N, eps, BC))
-    x = np.linspace(0,1,N)
+    x = np.linspace(0,1,N+1)
     u = discretization.simpleSolve(N, eps, BC)
     plt.plot(x,u)
     plt.show()
@@ -39,7 +39,7 @@ def investigateEpsilons():
     plt.xlabel(r"$x$")
     plt.ylabel(r"$u(x)$")
     plt.title(r"Plots of $u(x)$ for different $\epsilon$")
-    x = np.linspace(0,1,N)
+    x = np.linspace(0,1,N+1)
     for eps in eps_arr:
         u = discretization.simpleSolve(N, eps, BC)
         plt.plot(x,u, label = r"$\epsilon = {:2f}$".format(eps))
@@ -52,9 +52,21 @@ def investigateAccuracy():
     A function to make plots of the accuracy of the numerical solution for different N and eps values
     This is exercise 2.
     """
-    return
+    eps_arr = np.round(np.linspace(0.2,1,num=5),1)
+    N_it    = np.array([16,32,64,128,256])
+    BC      = [1,0]
+    print ("{:<5} {:<5} {:<25} {:<10}".format('eps','N','||u - u_ex||','h'))
+    for eps in eps_arr:
+        for N in N_it:
+            h               = 1/N
+            numSoly         = discretization.simpleSolve(N,eps,BC)
+            refSolx,refSoly = discretization.refSol(N,eps)
+            error           = np.max(np.abs(numSoly - refSoly))
+            print ("{:<5} {:<5} {:<25} {:<10}".format(eps,N,error,h))
+    return refSoly, numSoly
 
 if __name__=="__main__":
     print("Ricky moet adten")
     #Test()
     investigateEpsilons()
+    investigateAccuracy()
