@@ -73,6 +73,25 @@ def simpleSolve(N, eps, BC = [0,0]):
     return u
 
 def refSol(N,eps):
+    """
+    A function that gives the values at the gricpoints of the solutions to our differential equation
+
+    Parameters
+    ----------
+    N : int
+        The number of grid points 
+    eps : float64
+        The epsilon parameter from the differential equation
+        
+
+    Returns
+    -------
+    array of floats (dim: N)
+        The numerical solution of the differential equation, with boundary values included
+    """
     x   = np.linspace(0,1,N+1)
     y   = (np.exp(x/eps) - np.exp(1/eps))/(1-np.exp(1/eps))
     return x,y
+
+#def u(x,eps):
+#    return (np.exp(x/eps - np.exp(1/eps)))/(1 - np.exp(1/eps))
