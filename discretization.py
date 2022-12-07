@@ -75,7 +75,18 @@ def Gauss_Seidel(N,eps,Form):
     else:                                       #Symmetric
         B_GS = 1
     return B_GS
+
+def Gauss_Seidel_Iteration(N,eps):
+    b       = f(N,eps, BC = [1,0])
+    A,D,E,F = A_Full(N,eps)
+    u       = np.zeros(N-1)
+    j = 0
+    while j < 15:
+        for i in range(N-1):
+            u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
+        j = j+1
     
+    return A,b,u
 
 def f(N, eps, BC = [0,0]):
     """
