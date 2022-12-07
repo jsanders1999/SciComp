@@ -94,12 +94,12 @@ def Inverse():
     matrixInverse = sp.sparse.csr_matrix.toarray(matrixInverse)
 
     print("All entries are >= 0 : ", np.all(matrixInverse>=0))
-    return MatrixInverse
+    return matrixInverse
 
 def Eigenvalues():
-    N = 8
+    N = 64
     h = 1/N
-    eps = 0.5
+    eps = 0.0001
     Ah  = discretization.A(N,eps)
     
     print(Ah)
@@ -116,8 +116,7 @@ def Eigenvalues():
     return Ah, eigsInfo
 
 if __name__=="__main__":
-    print("Ricky moet adten en Julian adt mee")
     #investigateEpsilons()
-    investigateAccuracy()
+    #investigateAccuracy()
     #Inverse()
-    #Ah, Test = Eigenvalues()
+    Ah, Test = Eigenvalues()
