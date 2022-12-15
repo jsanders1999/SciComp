@@ -3,6 +3,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 #plt.rcParams['text.usetex'] = True
 import discretization
+import BIMs
 
 def testSimpleSolve():
     """
@@ -46,7 +47,7 @@ def investigateEpsilons():
     plt.show()
     return
 
-def investigateAccuracy():
+def investigateAccuracySimpleSolver():
     """
     A function to make plots of the accuracy of the numerical solution for different N and eps values
     This is exercise 2.
@@ -97,6 +98,7 @@ def Inverse():
     return matrixInverse
 
 def Eigenvalues():
+    """ Function to inspect the eigenvalues of matrix A"""
     N = 64
     h = 1/N
     eps = 0.0001
@@ -117,6 +119,6 @@ def Eigenvalues():
 
 if __name__=="__main__":
     #investigateEpsilons()
-    #investigateAccuracy()
+    #investigateAccuracySimpleSolver()
     #Inverse()
-    Ah, Test = Eigenvalues()
+    #Ah, Test = Eigenvalues()
