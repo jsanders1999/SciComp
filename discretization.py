@@ -42,11 +42,13 @@ def A_Full(N, eps):
         The discretization matrix components
     """
     h   = 1/N
-    D   = np.diag(np.ones(N-1)*((2*eps)/(h**2)) + 1/h,0)
-    E   = np.diag(np.ones(N-2)*((-eps/(h**2) - 1/h)), -1)
-    F   = np.diag(np.ones(N-2)* (-eps/(h**2)), 1)
-    A   = D + E + F
-    return A, D, E, F
+    D   = 1/h*sp.sparse.eye(N-1, format='csc') + 2*eps/h**2*sp.sparse.eye(N-1, format='csc') #np.diag(np.ones(N-1)*((2*eps)/(h**2)) + 1/h,0)
+    E   = - ( - 1/h*sp.sparse.eye(N-1, k=-1, format='csc') - eps/h**2*sp.sparse.eye(N-1, k=-1, format='csc') ) #-np.diag(np.ones(N-2)*((-eps/(h**2) - 1/h)), -1)
+    F   = - ( - eps/h**2*sp.sparse.eye(N-1, k=1, format='csc') )#-np.diag(np.ones(N-2)* (-eps/(h**2)), 1)
+    A   = D - E - F
+    E_hat = 1/D[0,0]*E #since diagonal has the same values everywhere
+    F_hat = 1/D[0,0]*F #since diagonal has the same values everywhere
+    return A, D, E, F, E_hat, F_hat
 
 def f(N, eps, BC = [0,0]):
     """
@@ -93,6 +95,13 @@ def simpleSolve(N, eps, BC = [0,0]):
     u[0] = BC[0]
     u[-1] = BC[1]
     u[1:-1] = sp.sparse.linalg.spsolve(A(N,eps), f(N,eps,BC)) #sp.sparse.linalg.inv(A(N,eps)).dot(f(N,eps,BC))
+    return u
+
+def AddBCtoSol(u_int, BC = [1,0]):
+    u = np.zeros(u_int.size+2)
+    u[0] = BC[0]
+    u[-1] = BC[1]
+    u[1:-1] = u_int
     return u
 
 def refSol(N,eps):

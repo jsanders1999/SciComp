@@ -18,8 +18,8 @@ def B_Jacobi(N, eps):
     array of floats (dim: (N-1)*(N-1))
         The residual iteration matrix of the Jabobi method
     """
-    A_Full, D, E, F = discretization.A_Full(N,eps)
-    B_Jac           = (-E) + (-F)
+    A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
+    B_Jac                           = E_hat + F_hat
     return B_Jac
 
 def B_Gauss_Seidel(N, eps, form):
@@ -68,18 +68,19 @@ def Jacobi_Iteration(N, eps, tol):
     -------
 
     """
-    MAX_IT  = 30
+    MAX_IT  = int(1e6)
     b       = discretization.f(N,eps, BC = [1,0])
-    A,D,E,F = discretization.A_Full(N,eps)
+    A,D,E,F,E_hat,F_hat = discretization.A_Full(N,eps)
     u       = np.zeros(N-1)
     z       = np.zeros(N-1)
     B       = B_Jacobi(N, eps)
     r       = b                     #Starting residual for u = np.zeros(N-1)
+    A       = A.toarray() #make A not sparse anymore :'(
     for j in range(MAX_IT):
         for i in range(N-1):
-            z[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
+            z[i] = (b[i] - A[i,:i].dot(u[:i]) - A[i,i+1:].dot(u[i+1:]))/A[i,i]
         u = z
-        r = B@r
+        r = B.dot(r)
         if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
             return u, r, j
     return u, r, MAX_IT
@@ -102,7 +103,7 @@ def Gauss_Seidel_Iteration_Forward(N, eps, tol):
     -------
 
     """
-    MAX_IT  = 30
+    MAX_IT  = int(1e3)
     b       = discretization.f(N,eps, BC = [1,0])
     A,D,E,F = discretization.A_Full(N,eps)
     u       = np.zeros(N-1)
