@@ -40,14 +40,12 @@ def B_Gauss_Seidel(N, eps, form):
     array of floats (dim: (N-1)*(N-1))
         The residual iteration matrix of the GS method
     """
+    A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
     if form == "Forward":
-        A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
         B_GS = np.linalg.inv((np.identity(N-1)-E_hat.toarray())).dot(F_hat.toarray()) #WIP
     elif form == "Backward":
-        A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
         B_GS = np.linalg.inv((np.identity(N-1)-F_hat.toarray())).dot(E_hat.toarray()) #WIP
     else:                                       #Symmetric
-        A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
         B_GSF = np.linalg.inv((np.identity(N-1)-E_hat.toarray())).dot(F_hat.toarray())
         B_GSB = np.linalg.inv((np.identity(N-1)-F_hat.toarray())).dot(E_hat.toarray())
         B_GS  = B_GSB.dot(B_GSF)
@@ -85,10 +83,42 @@ def Jacobi_Iteration(N, eps, tol):
         u = z
         r = B.dot(r)
         if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
-            return u, r, j
-    return u, r, MAX_IT
+            return A,u, r, j
+    return A,u, r, MAX_IT
 
-def Gauss_Seidel_Iteration_Forward(N, eps, tol):
+##def Gauss_Seidel_Iteration_Forward(N, eps, tol):
+##    """
+##    A function that solves Ax=f using a Forward Gauss Seidel method. A is computed using N and eps.
+##    tol determines the stopping criteria.
+##
+##    Parameters
+##    ----------
+##    N : int
+##        The number of grid points 
+##    eps : float64
+##        The epsilon parameter from the differential equation
+##    tol : float64
+##        The stopping criterion for the residual. 
+##
+##    Returns
+##    -------
+##
+##    """
+##    MAX_IT  = int(1e3)
+##    b       = discretization.f(N,eps, BC = [1,0])
+##    A,D,E,F = discretization.A_Full(N,eps)
+##    u       = np.zeros(N-1)
+##    B       = B_GS(N, eps, "Forward")
+##    r       = b                     #Starting residual for u = np.zeros(N-1)
+##    for j in range(MAX_IT):
+##        for i in range(N-1):
+##            u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
+##        r = B@r
+##        if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
+##            return u, r, j
+##    return u, r, MAX_IT
+
+def Gauss_Seidel_Iteration(N, eps, tol, form):
     """
     A function that solves Ax=f using a Forward Gauss Seidel method. A is computed using N and eps.
     tol determines the stopping criteria.
@@ -101,21 +131,52 @@ def Gauss_Seidel_Iteration_Forward(N, eps, tol):
         The epsilon parameter from the differential equation
     tol : float64
         The stopping criterion for the residual. 
-
+    form : string, "Forward", "Backward" or "Symmetric"
+        Whether to implement "Forward", "Backward" or "Symmetric" Gauss-Seidel. 
     Returns
     -------
 
     """
-    MAX_IT  = int(1e3)
+    A,D,E,F,E_hat,F_hat = discretization.A_Full(N,eps)
     b       = discretization.f(N,eps, BC = [1,0])
-    A,D,E,F = discretization.A_Full(N,eps)
+    r       = b                                         #Starting residual for u = np.zeros(N-1)
     u       = np.zeros(N-1)
-    B       = B_GS(N, eps, "Forward")
-    r       = b                     #Starting residual for u = np.zeros(N-1)
-    for j in range(MAX_IT):
-        for i in range(N-1):
-            u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
-        r = B@r
-        if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
-            return u, r, j
-    return u, r, MAX_IT
+    MAX_IT  = int(1e3)
+    A       = A.toarray()                               #make A not sparse anymore :'(
+    print("Starting b = ", b)
+    print("Starting r = ", r)
+    if form == "Forward":
+        B       = B_Gauss_Seidel(N, eps, "Forward")
+        for j in range(MAX_IT):
+            for i in range(N-1):
+                u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
+            r = B@r
+            print("B = ", B)
+            print("r = ", r)
+            print("b = ", b)
+            if np.linalg.norm(r)/np.linalg.norm(b) <= tol and (j>10) :
+                return A,u, r, j
+        return A,u, r, MAX_IT
+    
+    elif form == "Backward":
+        B       = B_Gauss_Seidel(N, eps, "Backward")
+
+        for j in range(MAX_IT):
+            for i in reversed(range(N-1)):
+                u[i] = (b[i] - A[i,i+1:]@u[i+1:] - A[i,:i]@u[:i] )/A[i,i]       #Is this correct?
+            r = B@r
+            if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
+                return A,u, r, j
+        return A,u, r, MAX_IT
+    
+    else: #Symmetric
+        B       = B_Gauss_Seidel(N, eps, "Symmetric")
+
+        
+    
+    
+    
+    
+    
+    
+
