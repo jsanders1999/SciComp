@@ -40,14 +40,17 @@ def B_Gauss_Seidel(N, eps, form):
     array of floats (dim: (N-1)*(N-1))
         The residual iteration matrix of the GS method
     """
-    if form == "Backward":
-        A_Full, D, E, F = discretization.A_Full(N,eps)
-        B_GS = np.linalg.inv(np.identity(N)) #WIP
     if form == "Forward":
-        A_Full, D, E, F = discretization.A_Full(N,eps)
-        B_GS = np.linalg.inv(np.identity(N)) #WIP
+        A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
+        B_GS = np.linalg.inv((np.identity(N-1)-E_hat.toarray())).dot(F_hat.toarray()) #WIP
+    elif form == "Backward":
+        A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
+        B_GS = np.linalg.inv((np.identity(N-1)-F_hat.toarray())).dot(E_hat.toarray()) #WIP
     else:                                       #Symmetric
-        B_GS = 1
+        A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
+        B_GSF = np.linalg.inv((np.identity(N-1)-E_hat.toarray())).dot(F_hat.toarray())
+        B_GSB = np.linalg.inv((np.identity(N-1)-F_hat.toarray())).dot(E_hat.toarray())
+        B_GS  = B_GSB.dot(B_GSF)
     return B_GS
 
 def Jacobi_Iteration(N, eps, tol):
