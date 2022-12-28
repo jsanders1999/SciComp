@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import discretization
 import BIMs
 from tqdm import tqdm
+import matplotlib.cm as cm
 
 def testSimpleSolve():
     """
@@ -93,11 +94,11 @@ def investigateConvergenceJacobi():
     tol = 1e-6
     eps_arr = np.logspace(-2,0,5)
     N_it    = np.array([16,32,64,128,256])#,512,1024,2048,4096,2*4096, 4*4096, 8*4096, 16*4096, 32*4096, 64*4096 ])
-    for eps in tqdm(eps_arr, desc= “eps_arr progress”):
+    for eps in tqdm(eps_arr, desc= "eps_arr progress"):
         fig_sol = plt.figure("Jacobi Solutions for eps = {}".format(eps))
         ax = fig_sol.add_subplot(1, 1, 1)
         ax.set_title("Jacobi Solutions for eps = {}".format(eps))
-        for i, N in tqdm(enumerate(np.flip(N_it)), desc= “N_it progress”):
+        for i, N in tqdm(enumerate(np.flip(N_it)), desc= "N_it progress"):
             u_Jac, r, iter = BIMs.Jacobi_Iteration(N, eps, tol)
             x = np.linspace(0,1,N+1)
             u = discretization.AddBCtoSol(u_Jac)
@@ -108,8 +109,7 @@ def investigateConvergenceJacobi():
     plt.show()
     return
 
-"""
-    for eps in eps_arr:)
+    for eps in eps_arr:
         for i, N in enumerate(N_it):
             numSoly         = BIMs.Jacobi_Iteration(N,eps,tol)
             error_arr[i] = error
@@ -127,17 +127,25 @@ def investigateConvergenceJacobi():
     plt.ylabel(r"$||u - u_ex||$")
     plt.legend()
     plt.show()
-    return refSoly, numSoly"""
+    return refSoly, numSoly
 
 def Inverse():
     """ Function to inspect the properties of matrix Ah"""
-    N = 8
+    N = 64
     h = 1/N
     eps = 0.5
-    matrixInverse = sp.sparse.linalg.inv(discretization.A(N,eps))
+    A = discretization.A(N,eps)
+    matrixInverse = sp.sparse.linalg.inv(A)
     matrixInverse = sp.sparse.csr_matrix.toarray(matrixInverse)
+    A = sp.sparse.csr_matrix.toarray(A)
 
-    print("All entries are >= 0 : ", np.all(matrixInverse>=0))
+    fig, (ax1,ax2) = plt.subplots(nrows=2)
+    pos1 = ax1.imshow(A, cmap = 'Blues')
+    fig.colorbar(pos1,ax=ax1, shrink = 0.5)
+    pos2 = ax2.imshow(matrixInverse, cmap = 'Reds_r')
+    cbarInv = fig.colorbar(pos2,ax=ax2, shrink = 0.5)
+    cbarInv.minorticks_on()
+    plt.show()
     return matrixInverse
 
 def Eigenvalues():
@@ -163,6 +171,6 @@ def Eigenvalues():
 if __name__=="__main__":
     #investigateEpsilons()
     #investigateAccuracySimpleSolver()
-    #Inverse()
+    Inverse()
     #Ah, Test = Eigenvalues()
-    investigateConvergenceJacobi()
+    #investigateConvergenceJacobi()

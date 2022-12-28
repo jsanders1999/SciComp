@@ -141,7 +141,7 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
     b       = discretization.f(N,eps, BC = [1,0])
     r       = b                                         #Starting residual for u = np.zeros(N-1)
     u       = np.zeros(N-1)
-    MAX_IT  = int(1e3)
+    MAX_IT  = int(1e5)
     A       = A.toarray()                               #make A not sparse anymore :'(
     print("Starting b = ", b)
     print("Starting r = ", r)
@@ -151,9 +151,9 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
             for i in range(N-1):
                 u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
             r = B@r
-            print("B = ", B)
-            print("r = ", r)
-            print("b = ", b)
+            #print("B = ", B)
+            #print("r = ", r)
+            #print("b = ", b)
             if np.linalg.norm(r)/np.linalg.norm(b) <= tol and (j>10) :
                 return A,u, r, j
         return A,u, r, MAX_IT
