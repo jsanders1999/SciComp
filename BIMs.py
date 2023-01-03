@@ -42,10 +42,10 @@ def B_Gauss_Seidel(N, eps, form):
     """
     A_Full, D, E, F, E_hat, F_hat   = discretization.A_Full(N,eps)
     if form == "Forward":
-        B_GS = np.linalg.inv((np.identity(N-1)-E_hat.toarray())).dot(F_hat.toarray()) #WIP
+        B_GS = np.linalg.inv((np.identity(N-1)-E_hat.toarray())).dot(F_hat.toarray()) 
     elif form == "Backward":
-        B_GS = np.linalg.inv((np.identity(N-1)-F_hat.toarray())).dot(E_hat.toarray()) #WIP
-    else:                                       #Symmetric
+        B_GS = np.linalg.inv((np.identity(N-1)-F_hat.toarray())).dot(E_hat.toarray()) 
+    else: #Symmetric
         B_GSF = np.linalg.inv((np.identity(N-1)-E_hat.toarray())).dot(F_hat.toarray())
         B_GSB = np.linalg.inv((np.identity(N-1)-F_hat.toarray())).dot(E_hat.toarray())
         B_GS  = B_GSB.dot(B_GSF)
@@ -76,7 +76,7 @@ def Jacobi_Iteration(N, eps, tol):
     z       = np.zeros(N-1)
     B       = B_Jacobi(N, eps)
     r       = b                     #Starting residual for u = np.zeros(N-1)
-    A       = A.toarray() #make A not sparse anymore :'(
+    A       = A.toarray() 
     for j in range(MAX_IT):
         for i in range(N-1):
             z[i] = (b[i] - A[i,:i].dot(u[:i]) - A[i,i+1:].dot(u[i+1:]))/A[i,i]
@@ -142,7 +142,7 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
     r       = b                                         #Starting residual for u = np.zeros(N-1)
     u       = np.zeros(N-1)
     MAX_IT  = int(1e5)
-    A       = A.toarray()                               #make A not sparse anymore :'(
+    A       = A.toarray()                               
     print("Starting b = ", b)
     print("Starting r = ", r)
     if form == "Forward":
@@ -154,7 +154,7 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
             #print("B = ", B)
             #print("r = ", r)
             #print("b = ", b)
-            if np.linalg.norm(r)/np.linalg.norm(b) <= tol and (j>10) :
+            if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
                 return A,u, r, j
         return A,u, r, MAX_IT
     
@@ -171,9 +171,19 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
     
     else: #Symmetric
         B       = B_Gauss_Seidel(N, eps, "Symmetric")
-
-        
-    
+        for j in range(MAX_IT):
+            for i in range(N-1):
+                u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
+            for i in reversed(range(N-1)):
+                u[i] = (b[i] - A[i,i+1:]@u[i+1:] - A[i,:i]@u[:i] )/A[i,i]
+            r = B@r
+            print("B = ", B)
+            print("r = ", r)
+            print("b = ", b)
+            if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
+                return A,u, r, j
+        return A,u, r, MAX_IT
+            
     
     
     
