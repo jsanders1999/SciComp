@@ -130,7 +130,8 @@ def investigateConvergenceJacobi():
     return refSoly, numSoly
 
 def Inverse():
-    """ Function to inspect the properties of matrix Ah"""
+    """ A function to inspect the properties of matrix Ah
+        This is part of exercise 3"""
     N = 64
     h = 1/N
     eps = 0.5
@@ -149,7 +150,8 @@ def Inverse():
     return matrixInverse
 
 def Eigenvalues():
-    """ Function to inspect the eigenvalues of matrix A"""
+    """ A function to inspect the eigenvalues of matrix A,
+        This is part of exercise 4"""
     N = 64
     h = 1/N
     eps = 0.0001
