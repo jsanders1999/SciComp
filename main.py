@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 #plt.rcParams['text.usetex'] = True
 import discretization
 import BIMs
+import GMRES
 from tqdm import tqdm
 import matplotlib.cm as cm
 
@@ -86,7 +87,7 @@ def investigateAccuracySimpleSolver():
     return refSoly, numSoly
 
 
-def investigateConvergence(eps, method):
+def investigateConvergence(eps, method, method_string):
     """
     A function to make plots of the accuracy of the numerical solution 
     obtained with the Jacobi method for different N and eps values
@@ -99,9 +100,9 @@ def investigateConvergence(eps, method):
     """
     tol     = 1e-6 #must always be 1e-6 as stated in the exercise
     N_it    = np.array([16,32,64,128,256])#,512,1024,2048,4096,2*4096, 4*4096, 8*4096, 16*4096, 32*4096, 64*4096 ])
-    fig_sol = plt.figure("Jacobi Solutions for eps = {}".format(eps))
+    fig_sol = plt.figure("{} Solutions for eps = {}".format(method_string, eps))
     ax = fig_sol.add_subplot(1, 1, 1)
-    ax.set_title("Jacobi Solutions for eps = {}".format(eps))
+    ax.set_title("{} Solutions for eps = {}".format(method_string, eps))
     for i, N in tqdm(enumerate(np.flip(N_it)), desc= "N_it progress"):
         u_Jac, r, iter = method(N, eps, tol)
         x = np.linspace(0,1,N+1)
@@ -158,10 +159,24 @@ def Eigenvalues():
     Ah  = sp.sparse.csr_matrix.toarray(Ah)
     return Ah, eigsInfo
 
+def testGMRES():
+    N = 512
+    eps = 0.1
+    tol = 1e-6
+    u_GMRES, r, it = GMRES.GMRES_method(N, eps, tol)
+    x = np.linspace(0,1,N+1)
+    u = discretization.AddBCtoSol(u_GMRES)
+    print(r, it)
+    plt.plot(x,u)
+    plt.show()
+    return
+
 if __name__=="__main__":
     #investigateEpsilons()
     #investigateAccuracySimpleSolver()
     #Inverse()
     #Ah, Test = Eigenvalues()
     #investigateConvergenceJacobi()
-    investigateConvergence(eps = 0.1, method = BIMs.Jacobi_Iteration)
+    #investigateConvergence(eps = 0.1, method = BIMs.Jacobi_Iteration)
+    testGMRES()
+    investigateConvergence(eps = 0.1, method = GMRES.GMRES_method, method_string = "GMRES" )
