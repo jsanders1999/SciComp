@@ -85,48 +85,36 @@ def investigateAccuracySimpleSolver():
     plt.show()
     return refSoly, numSoly
 
-def investigateConvergenceJacobi():
+
+def investigateConvergence(eps, method):
     """
     A function to make plots of the accuracy of the numerical solution 
     obtained with the Jacobi method for different N and eps values
-    This is exercise 36.
+    This is exercise part of exercise 6, (so also 7, 8, 9).
+
+    eps: float64
+        The epsilon parameter in the differential equatin
+    method: function of (N, eps, tol) [BIMs.Jacobi_Iteration, BIMs.Gauss_Seidel, etc]
+        The iterative method used to solve the system Au=f
     """
-    tol = 1e-6
-    eps_arr = np.logspace(-2,0,5)
+    tol     = 1e-6 #must always be 1e-6 as stated in the exercise
     N_it    = np.array([16,32,64,128,256])#,512,1024,2048,4096,2*4096, 4*4096, 8*4096, 16*4096, 32*4096, 64*4096 ])
-    for eps in tqdm(eps_arr, desc= "eps_arr progress"):
-        fig_sol = plt.figure("Jacobi Solutions for eps = {}".format(eps))
-        ax = fig_sol.add_subplot(1, 1, 1)
-        ax.set_title("Jacobi Solutions for eps = {}".format(eps))
-        for i, N in tqdm(enumerate(np.flip(N_it)), desc= "N_it progress"):
-            u_Jac, r, iter = BIMs.Jacobi_Iteration(N, eps, tol)
-            x = np.linspace(0,1,N+1)
-            u = discretization.AddBCtoSol(u_Jac)
-            ax.plot(x, u, marker = ".", markersize = 2, linestyle = "None", label = "N = {}, iter = {}".format(N, iter))
-        ax.set_xlabel(r"$x$")
-        ax.set_ylabel(r"$u_{Jac}$")
-        ax.legend()
+    fig_sol = plt.figure("Jacobi Solutions for eps = {}".format(eps))
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title("Jacobi Solutions for eps = {}".format(eps))
+    for i, N in tqdm(enumerate(np.flip(N_it)), desc= "N_it progress"):
+        u_Jac, r, iter = method(N, eps, tol)
+        x = np.linspace(0,1,N+1)
+        u = discretization.AddBCtoSol(u_Jac)
+        ax.plot(x, u, marker = ".", markersize = 2, linestyle = "None", label = "N = {}, iter = {}".format(N, iter))
+    ax.set_xlabel(r"$x$")
+    ax.set_ylabel(r"$u_{Jac}$")
+    ax.legend()
     plt.show()
     return
-
-    for eps in eps_arr:
-        for i, N in enumerate(N_it):
-            numSoly         = BIMs.Jacobi_Iteration(N,eps,tol)
-            error_arr[i] = error
-        
-        f = lambda x, a, b : a*x**b
-        cutoff_index = 5
-        popt, pcov = sp.optimize.curve_fit(f, 1/N_it[cutoff_index:], error_arr[cutoff_index:])
-        print(popt)
-        h_arr = np.linspace(1/N_it[-1], 1/N_it[0], 100)
-        p = ax.plot(1/N_it, error_arr,  marker = ".", linestyle = "None", label = r"$\epsilon = {:.2f}, b = {:.2f} $".format(eps, popt[1]) )
-        plt.plot(h_arr, f(h_arr, *popt), color = p[-1].get_color())
-    ax.set_yscale('log')
-    ax.set_xscale('log')
-    plt.xlabel(r"$h$")
-    plt.ylabel(r"$||u - u_ex||$")
-    plt.legend()
-    plt.show()
+    #TODO
+    #Make a y-log plot of r^k/f versus k for different values of N
+    #Make a table of the reduction factor for the last five jacobi itterations for different values of N
     return refSoly, numSoly
 
 def Inverse():
@@ -173,6 +161,7 @@ def Eigenvalues():
 if __name__=="__main__":
     #investigateEpsilons()
     #investigateAccuracySimpleSolver()
-    Inverse()
+    #Inverse()
     #Ah, Test = Eigenvalues()
     #investigateConvergenceJacobi()
+    investigateConvergence(eps = 0.1, method = BIMs.Jacobi_Iteration)

@@ -83,8 +83,8 @@ def Jacobi_Iteration(N, eps, tol):
         u = z
         r = B.dot(r)
         if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
-            return A,u, r, j
-    return A,u, r, MAX_IT
+            return u, r, j
+    return u, r, MAX_IT
 
 ##def Gauss_Seidel_Iteration_Forward(N, eps, tol):
 ##    """
