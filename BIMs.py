@@ -81,7 +81,7 @@ def Jacobi_Iteration(N, eps, tol):
         for i in range(N-1):
             z[i] = (b[i] - A[i,:i].dot(u[:i]) - A[i,i+1:].dot(u[i+1:]))/A[i,i]
         u = z
-        r = B.dot(r)
+        r = b - A@u
         if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
             return u, r, j
     return u, r, MAX_IT
@@ -150,10 +150,10 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
         for j in range(MAX_IT):
             for i in range(N-1):
                 u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
-            r = B@r
-            #print("B = ", B)
-            #print("r = ", r)
-            #print("b = ", b)
+            r = b - A@u
+            print("B = ", B)
+            print("r = ", r)
+            print("b = ", b)
             if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
                 return A,u, r, j
         return A,u, r, MAX_IT
@@ -164,7 +164,7 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
         for j in range(MAX_IT):
             for i in reversed(range(N-1)):
                 u[i] = (b[i] - A[i,i+1:]@u[i+1:] - A[i,:i]@u[:i] )/A[i,i]       #Is this correct?
-            r = B@r
+            r = b - A@u
             if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
                 return A,u, r, j
         return A,u, r, MAX_IT
@@ -176,7 +176,7 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
                 u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
             for i in reversed(range(N-1)):
                 u[i] = (b[i] - A[i,i+1:]@u[i+1:] - A[i,:i]@u[:i] )/A[i,i]
-            r = B@r
+            r = b - A@u
             print("B = ", B)
             print("r = ", r)
             print("b = ", b)
