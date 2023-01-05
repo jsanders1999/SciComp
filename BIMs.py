@@ -87,7 +87,7 @@ def Jacobi_Iteration(N, eps, tol, saveResiduals = False):
         for i in range(N-1):
             z[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
         u = z
-        r = b - A.dot(u)
+        r = b - A@u
         if saveResiduals:
             res_arr[j+1] = np.linalg.norm(r)/np.linalg.norm(b)
         if np.linalg.norm(r)/np.linalg.norm(b) <= tol:

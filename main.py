@@ -8,7 +8,7 @@ import GMRES
 from tqdm import tqdm
 import matplotlib.cm as cm
 
-NARR = np.array([16,32,64,128,256)
+NARR = np.array([16,32,64,128,256]) #np.array([16,32,64,128,256, 512, 1024]) #
 
 def testSimpleSolve():
     """
@@ -241,14 +241,13 @@ def testGMRES():
     N = 512
     eps = 0.1
     tol = 1e-6
-    u_GMRES, r, it = GMRES.GMRES_method(N, eps, tol)
+    u_GMRES, r, it = GMRES.GMRES_Iterations(N, eps, tol)
     x = np.linspace(0,1,N+1)
     u = discretization.AddBCtoSol(u_GMRES)
     print(r, it)
     plt.plot(x,u)
     plt.show()
     return
-
 
 
 def Exercise6():
@@ -287,6 +286,24 @@ def Exercise9():
     investigateMethodReductionFactors(eps = eps,  method = BIMs.Symmetric_Gauss_Seidel_Iteration, method_string = "Symmetric Gauss Seidel")
     return
 
+def Exercise12():
+    #GMRES
+    eps = 0.1
+    investigateMethodSolutions(eps = eps, method = GMRES.GMRES_Iterations, method_string = "GMRES")
+    for N in NARR:
+        investigateMethodConvergence(N = N, eps = eps,  method = GMRES.GMRES_Iterations, method_string = "GMRES")
+    return
+
+def Exercise13():
+    #GMRES(m)
+    eps = 0.1
+    m = 10
+    def _GMRES_mFilledIn_Iterations(N, eps, tol, saveResiduals = False):
+        return GMRES.GMRES_m_Iterations(N, eps, tol, m=m, saveResiduals = saveResiduals)
+    investigateMethodSolutions(eps = eps, method = _GMRES_mFilledIn_Iterations, method_string = "GMRES({})".format(m))
+    for N in NARR:
+        investigateMethodConvergence(N = N, eps = eps, method = _GMRES_mFilledIn_Iterations, method_string = "GMRES({})".format(m))
+    return
 
 
 if __name__=="__main__":
@@ -300,4 +317,4 @@ if __name__=="__main__":
     #investigateMethodSolutions(eps = 0.1, method = GMRES.GMRES_method, method_string = "GMRES" )
     #investigateMethodConvergence(N = 164, eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
     #investigateMethodReductionFactors(eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
-    Exercise9()
+    Exercise13()
