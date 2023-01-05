@@ -54,16 +54,16 @@ def GMRES_Iterations(N, eps, tol, saveResiduals = False, k = None, u0 = [None]):
 
 def GMRES_m_Iterations(N, eps, tol, m, saveResiduals = False):
     MAX_REC = 1000
-    res_arr_full = np.zeros(MAX_REC*m)
+    res_arr_full = np.zeros(MAX_REC*m+1)
     k_max_full = 0
-    u, r, k_max, res_arr = GMRES_Iterations(N, eps, tol, k = m-1, saveResiduals = saveResiduals)
-    res_arr_full[:m]    = res_arr
+    u, r, k_max, res_arr = GMRES_Iterations(N, eps, tol, k = m, saveResiduals = saveResiduals)
+    res_arr_full[:m+1]    = res_arr
     k_max_full      += k_max
     
     for rec in range(1, MAX_REC):
-        u, r, k_max, res_arr = GMRES_Iterations(N, eps, tol, k = m-1, saveResiduals = saveResiduals, u0 = u)
-        res_arr_full[(rec)*m:(rec+1)*m] = res_arr
-        k_max_full      += k_max+1
+        u, r, k_max, res_arr = GMRES_Iterations(N, eps, tol, k = m, saveResiduals = saveResiduals, u0 = u)
+        res_arr_full[1+(rec)*(m):(rec+1)*(m)+1] = res_arr[1:] #first value was already in the full array
+        k_max_full      += k_max
         if r < tol:
             return  u, r, k_max_full, res_arr_full
     return  u, r, k_max_full, res_arr_full
