@@ -5,7 +5,7 @@ import scipy as sp
 ###Matrix Creations
 def A(N, eps):
     """
-    A function that resturns the discretization matrix for a system with N nodes and parameter epsilon
+    A function that returns the discretization matrix for a system with N nodes and parameter epsilon
 
     Parameters
     ----------
