@@ -8,6 +8,8 @@ import GMRES
 from tqdm import tqdm
 import matplotlib.cm as cm
 
+NARR = np.array([16,32,64,128,256)
+
 def testSimpleSolve():
     """
     A function to test the function simpleSolve from discretization.py
@@ -100,7 +102,7 @@ def investigateMethodSolutions(eps, method, method_string, show = True):
     """
     #initialize values
     tol     = 1e-6 #must always be 1e-6 as stated in the exercise
-    N_it    = np.array([16,32,64,128,256])#,512,1024,2048,4096,2*4096, 4*4096, 8*4096, 16*4096, 32*4096, 64*4096 ])
+    N_it    = NARR#np.array([16,32,64,128,256,512])#,512,1024,2048,4096,2*4096, 4*4096, 8*4096, 16*4096, 32*4096, 64*4096 ])
     fig_sol = plt.figure("{} Solutions for eps = {}".format(method_string, eps))
 
     #intialize figure and axis
@@ -108,7 +110,7 @@ def investigateMethodSolutions(eps, method, method_string, show = True):
     ax.set_title("{} Solutions for eps = {}".format(method_string, eps))
 
     #Solve using Method for each N, plot solution in the axis
-    for i, N in tqdm(enumerate(np.flip(N_it)), desc= "N_it progress"):
+    for i, N in enumerate(np.flip(N_it)):
         u_meth, r, k_max, res_arr = method(N, eps, tol)
         x = np.linspace(0,1,N+1)
         u = discretization.AddBCtoSol(u_meth)
@@ -166,12 +168,12 @@ def investigateMethodReductionFactors(eps, method, method_string):
     """
     #initialize values
     tol     = 1e-6 #must always be 1e-6 as stated in the exercise
-    N_arr   = np.array([16,32,64,128,256,512,1024])
+    N_arr   = NARR #np.array([16,32,64,128,256,512])
     red_arr = np.zeros((len(N_arr), 5))
     k_arr   = np.zeros(len(N_arr))
 
     #Solve using Method for each N, save reduction factors
-    for i, N in tqdm(enumerate(N_arr), desc = "Reduction Factor Calculations for different N"):
+    for i, N in enumerate(N_arr):
         u_meth, r, k_max, res_arr = method(N, eps, tol, saveResiduals = True)
         k_arr[i] = int(k_max + 1)
         for j in range(5):
@@ -253,21 +255,36 @@ def Exercise6():
     #Jacobi
     eps = 0.1
     investigateMethodSolutions(eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi"  )
-    for N in np.array([16,32,64,128,256]):
+    for N in NARR:
         investigateMethodConvergence(N = N, eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
     investigateMethodReductionFactors(eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
     return
 
 def Exercise7():
     #Forward GS
+    eps = 0.1
+    investigateMethodSolutions(eps = eps, method = BIMs.Forward_Gauss_Seidel_Iteration, method_string = "Forward Gauss Seidel")
+    for N in NARR:
+        investigateMethodConvergence(N = N, eps = eps, method = BIMs.Forward_Gauss_Seidel_Iteration, method_string = "Forward Gauss Seidel")
+    investigateMethodReductionFactors(eps = eps, method = BIMs.Forward_Gauss_Seidel_Iteration, method_string = "Forward Gauss Seidel")
     return
 
 def Exercise8():
     #Backward GS
+    eps = 0.1
+    investigateMethodSolutions(eps = eps, method = BIMs.Backward_Gauss_Seidel_Iteration, method_string = "Backward Gauss Seidel")
+    for N in NARR:
+        investigateMethodConvergence(N = N, eps = eps, method = BIMs.Backward_Gauss_Seidel_Iteration, method_string = "Backward Gauss Seidel")
+    investigateMethodReductionFactors(eps = eps, method = BIMs.Backward_Gauss_Seidel_Iteration, method_string = "Backward Gauss Seidel")
     return
 
 def Exercise9():
     #Symmetric GS
+    eps = 0.1
+    investigateMethodSolutions(eps = eps, method = BIMs.Symmetric_Gauss_Seidel_Iteration, method_string = "Symmetric Gauss Seidel")
+    for N in NARR:
+        investigateMethodConvergence(N = N, eps = eps,  method = BIMs.Symmetric_Gauss_Seidel_Iteration, method_string = "Symmetric Gauss Seidel")
+    investigateMethodReductionFactors(eps = eps,  method = BIMs.Symmetric_Gauss_Seidel_Iteration, method_string = "Symmetric Gauss Seidel")
     return
 
 
@@ -282,4 +299,5 @@ if __name__=="__main__":
     #testGMRES()
     #investigateMethodSolutions(eps = 0.1, method = GMRES.GMRES_method, method_string = "GMRES" )
     #investigateMethodConvergence(N = 164, eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
-    investigateMethodReductionFactors(eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
+    #investigateMethodReductionFactors(eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
+    Exercise9()

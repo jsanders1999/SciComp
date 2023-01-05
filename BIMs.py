@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
 import discretization
+from tqdm import tqdm
 
 def B_Jacobi(N, eps):
     """
@@ -69,22 +70,22 @@ def Jacobi_Iteration(N, eps, tol, saveResiduals = False):
     -------
 
     """
-    MAX_IT  = int(1e6)
+    MAX_IT  = N**2#int(1e6)
     b       = discretization.f(N,eps, BC = [1,0])
     A,D,E,F,E_hat,F_hat = discretization.A_Full(N,eps)
+    A       = A.toarray() 
     u       = np.zeros(N-1)
     z       = np.zeros(N-1)
-    B       = B_Jacobi(N, eps)
+    #B       = B_Jacobi(N, eps)
     r       = b                     #Starting residual for u = np.zeros(N-1)
     if saveResiduals:
         res_arr = np.zeros((MAX_IT+1))
         res_arr[0] = np.linalg.norm(r)/np.linalg.norm(b)
     else:
-        r_arr = None
-    A       = A.toarray() 
-    for j in range(MAX_IT):
+        res_arr = None
+    for j in tqdm(range(MAX_IT), desc = "Jacobi Iterations for N = {}".format(N)):
         for i in range(N-1):
-            z[i] = (b[i] - A[i,:i].dot(u[:i]) - A[i,i+1:].dot(u[i+1:]))/A[i,i]
+            z[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
         u = z
         r = b - A.dot(u)
         if saveResiduals:
@@ -93,39 +94,7 @@ def Jacobi_Iteration(N, eps, tol, saveResiduals = False):
             return u, r, j, res_arr
     return u, r, MAX_IT, res_arr
 
-##def Gauss_Seidel_Iteration_Forward(N, eps, tol):
-##    """
-##    A function that solves Ax=f using a Forward Gauss Seidel method. A is computed using N and eps.
-##    tol determines the stopping criteria.
-##
-##    Parameters
-##    ----------
-##    N : int
-##        The number of grid points 
-##    eps : float64
-##        The epsilon parameter from the differential equation
-##    tol : float64
-##        The stopping criterion for the residual. 
-##
-##    Returns
-##    -------
-##
-##    """
-##    MAX_IT  = int(1e3)
-##    b       = discretization.f(N,eps, BC = [1,0])
-##    A,D,E,F = discretization.A_Full(N,eps)
-##    u       = np.zeros(N-1)
-##    B       = B_GS(N, eps, "Forward")
-##    r       = b                     #Starting residual for u = np.zeros(N-1)
-##    for j in range(MAX_IT):
-##        for i in range(N-1):
-##            u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
-##        r = B@r
-##        if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
-##            return u, r, j
-##    return u, r, MAX_IT
-
-def Gauss_Seidel_Iteration(N, eps, tol, form):
+def Gauss_Seidel_Iteration(N, eps, tol, form, saveResiduals = False):
     """
     A function that solves Ax=f using a Forward Gauss Seidel method. A is computed using N and eps.
     tol determines the stopping criteria.
@@ -148,49 +117,72 @@ def Gauss_Seidel_Iteration(N, eps, tol, form):
     b       = discretization.f(N,eps, BC = [1,0])
     r       = b                                         #Starting residual for u = np.zeros(N-1)
     u       = np.zeros(N-1)
-    MAX_IT  = int(1e5)
-    A       = A.toarray()                               
-    print("Starting b = ", b)
-    print("Starting r = ", r)
+    MAX_IT  = N**2 #int(1e5)
+    A       = A.toarray()
+    if saveResiduals:
+        res_arr = np.zeros((MAX_IT+1))
+        res_arr[0] = np.linalg.norm(r)/np.linalg.norm(b)
+    else:
+        res_arr = None                   
+    #print("Starting b = ", b)
+    #print("Starting r = ", r)
     if form == "Forward":
-        B       = B_Gauss_Seidel(N, eps, "Forward")
-        for j in range(MAX_IT):
+        #B       = B_Gauss_Seidel(N, eps, "Forward")
+        for j in tqdm(range(MAX_IT), desc = "FGS iterations for N = {}".format(N)):
             for i in range(N-1):
                 u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
             r = b - A@u
-            print("B = ", B)
-            print("r = ", r)
-            print("b = ", b)
+            #print("B = ", B)
+            #print("r = ", r)
+            #print("b = ", b)
+            if saveResiduals:
+                res_arr[j+1] = np.linalg.norm(r)/np.linalg.norm(b)
             if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
-                return A,u, r, j
-        return A,u, r, MAX_IT
+                return u, r, j, res_arr
+        return u, r, MAX_IT, res_arr
     
     elif form == "Backward":
-        B       = B_Gauss_Seidel(N, eps, "Backward")
-
-        for j in range(MAX_IT):
+        #B       = B_Gauss_Seidel(N, eps, "Backward")
+        for j in tqdm(range(MAX_IT), desc = "BGS iterations for N = {}".format(N)):
             for i in reversed(range(N-1)):
                 u[i] = (b[i] - A[i,i+1:]@u[i+1:] - A[i,:i]@u[:i] )/A[i,i]       #Is this correct?
             r = b - A@u
+            if saveResiduals:
+                res_arr[j+1] = np.linalg.norm(r)/np.linalg.norm(b)
             if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
-                return A,u, r, j
-        return A,u, r, MAX_IT
+                return u, r, j, res_arr
+        return u, r, MAX_IT, res_arr
     
-    else: #Symmetric
-        B       = B_Gauss_Seidel(N, eps, "Symmetric")
-        for j in range(MAX_IT):
+    elif form == "Symmetric":
+        #B       = B_Gauss_Seidel(N, eps, "Symmetric")
+        for j in tqdm(range(MAX_IT), desc = "SymGS iterations for N = {}".format(N)):
             for i in range(N-1):
                 u[i] = (b[i] - A[i,:i]@u[:i] - A[i,i+1:]@u[i+1:])/A[i,i]
             for i in reversed(range(N-1)):
                 u[i] = (b[i] - A[i,i+1:]@u[i+1:] - A[i,:i]@u[:i] )/A[i,i]
             r = b - A@u
-            print("B = ", B)
-            print("r = ", r)
-            print("b = ", b)
+            #print("B = ", B)
+            #print("r = ", r)
+            #print("b = ", b)
+            if saveResiduals:
+                res_arr[j+1] = np.linalg.norm(r)/np.linalg.norm(b)
             if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
-                return A,u, r, j
-        return A,u, r, MAX_IT
+                return u, r, j, res_arr
+        return u, r, MAX_IT, res_arr
+    
+    else:
+        raise ValueError('Method name string not in Gaus_Seidel_Iteration not valid')
             
+#defined these to conveniently plug in function names in the investigate... functions
+
+def Forward_Gauss_Seidel_Iteration(N, eps, tol, saveResiduals = False):
+    return Gauss_Seidel_Iteration(N, eps, tol, form = "Forward", saveResiduals = saveResiduals)
+
+def Backward_Gauss_Seidel_Iteration(N, eps, tol, saveResiduals = False):
+    return Gauss_Seidel_Iteration(N, eps, tol, form = "Backward", saveResiduals = saveResiduals)
+
+def Symmetric_Gauss_Seidel_Iteration(N, eps, tol, saveResiduals = False):
+    return Gauss_Seidel_Iteration(N, eps, tol, form = "Symmetric", saveResiduals = saveResiduals)
     
     
     
