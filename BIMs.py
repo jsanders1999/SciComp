@@ -51,7 +51,7 @@ def B_Gauss_Seidel(N, eps, form):
         B_GS  = B_GSB.dot(B_GSF)
     return B_GS
 
-def Jacobi_Iteration(N, eps, tol):
+def Jacobi_Iteration(N, eps, tol, saveResiduals = False):
     """
     A function that solves Ax=f using a Jabobi iteration method. A is computed using N and eps.
     tol determines the stopping criteria
@@ -76,15 +76,22 @@ def Jacobi_Iteration(N, eps, tol):
     z       = np.zeros(N-1)
     B       = B_Jacobi(N, eps)
     r       = b                     #Starting residual for u = np.zeros(N-1)
+    if saveResiduals:
+        res_arr = np.zeros((MAX_IT+1))
+        res_arr[0] = np.linalg.norm(r)/np.linalg.norm(b)
+    else:
+        r_arr = None
     A       = A.toarray() 
     for j in range(MAX_IT):
         for i in range(N-1):
             z[i] = (b[i] - A[i,:i].dot(u[:i]) - A[i,i+1:].dot(u[i+1:]))/A[i,i]
         u = z
-        r = b - A@u
+        r = b - A.dot(u)
+        if saveResiduals:
+            res_arr[j+1] = np.linalg.norm(r)/np.linalg.norm(b)
         if np.linalg.norm(r)/np.linalg.norm(b) <= tol:
-            return u, r, j
-    return u, r, MAX_IT
+            return u, r, j, res_arr
+    return u, r, MAX_IT, res_arr
 
 ##def Gauss_Seidel_Iteration_Forward(N, eps, tol):
 ##    """

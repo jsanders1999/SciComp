@@ -87,10 +87,10 @@ def investigateAccuracySimpleSolver():
     return refSoly, numSoly
 
 
-def investigateConvergence(eps, method, method_string):
+def investigateMethodSolutions(eps, method, method_string, show = True):
     """
-    A function to make plots of the accuracy of the numerical solution 
-    obtained with the Jacobi method for different N and eps values
+    A function to make plots of the numerical solutions 
+    obtained with a numerical method for different N and eps values
     This is exercise part of exercise 6, (so also 7, 8, 9).
 
     eps: float64
@@ -98,25 +98,101 @@ def investigateConvergence(eps, method, method_string):
     method: function of (N, eps, tol) [BIMs.Jacobi_Iteration, BIMs.Gauss_Seidel, etc]
         The iterative method used to solve the system Au=f
     """
+    #initialize values
     tol     = 1e-6 #must always be 1e-6 as stated in the exercise
     N_it    = np.array([16,32,64,128,256])#,512,1024,2048,4096,2*4096, 4*4096, 8*4096, 16*4096, 32*4096, 64*4096 ])
     fig_sol = plt.figure("{} Solutions for eps = {}".format(method_string, eps))
+
+    #intialize figure and axis
     ax = fig_sol.add_subplot(1, 1, 1)
     ax.set_title("{} Solutions for eps = {}".format(method_string, eps))
+
+    #Solve using Method for each N, plot solution in the axis
     for i, N in tqdm(enumerate(np.flip(N_it)), desc= "N_it progress"):
-        u_Jac, r, iter = method(N, eps, tol)
+        u_meth, r, k_max, res_arr = method(N, eps, tol)
         x = np.linspace(0,1,N+1)
-        u = discretization.AddBCtoSol(u_Jac)
-        ax.plot(x, u, marker = ".", markersize = 2, linestyle = "None", label = "N = {}, iter = {}".format(N, iter))
+        u = discretization.AddBCtoSol(u_meth)
+        ax.plot(x, u, marker = ".", markersize = 2, linestyle = "None", label = "N = {}, k_max = {}".format(N, k_max))
+    
+    #Add labels and to the plot
     ax.set_xlabel(r"$x$")
-    ax.set_ylabel(r"$u_{Jac}$")
+    ax.set_ylabel(r"$u_{}$")
     ax.legend()
-    plt.show()
+    if show:
+        plt.show()
     return
-    #TODO
-    #Make a y-log plot of r^k/f versus k for different values of N
-    #Make a table of the reduction factor for the last five jacobi itterations for different values of N
-    return refSoly, numSoly
+
+def investigateMethodConvergence(N, eps, method, method_string, show = True):
+    """
+    A function to make plots of the accuracy of the numerical solution 
+    obtained with a numerical method for different N and eps values
+    This is exercise part of exercise 6, (so also 7, 8, 9).
+
+    eps: float64
+        The epsilon parameter in the differential equatin
+    method: function of (N, eps, tol) [BIMs.Jacobi_Iteration, BIMs.Gauss_Seidel, etc]
+        The iterative method used to solve the system Au=f
+    """
+    #initialize values
+    tol     = 1e-6 #must always be 1e-6 as stated in the exercise
+
+    #intialize figure and axis
+    fig_sol = plt.figure("{} Convergence for N = {}, eps = {}".format(method_string, N, eps))
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title("{} Convergence for N = {}, eps = {}".format(method_string, N, eps))
+
+    #Solve using Method for N, plot solution in the axis
+    u_meth, r, k_max, res_arr = method(N, eps, tol, saveResiduals = True)
+
+    ax.plot(res_arr[:k_max+2], marker = ".", markersize = 2, linestyle = "None", label = "N = {}, k_max = {}".format(N, k_max))
+    ax.set_xlabel(r"$k$")
+    ax.set_ylabel(r"$\frac{||r^k||}{||f^h||}$")
+    ax.set_yscale('log')
+    ax.legend()
+    if show:
+        plt.show()
+    return
+
+def investigateMethodReductionFactors(eps, method, method_string):
+    """
+    A function to make plots of the accuracy of the numerical solution 
+    obtained with a numerical method for different N and eps values
+    This is exercise part of exercise 6, (so also 7, 8, 9).
+
+    eps: float64
+        The epsilon parameter in the differential equatin
+    method: function of (N, eps, tol) [BIMs.Jacobi_Iteration, BIMs.Gauss_Seidel, etc]
+        The iterative method used to solve the system Au=f
+    """
+    #initialize values
+    tol     = 1e-6 #must always be 1e-6 as stated in the exercise
+    N_arr   = np.array([16,32,64,128,256,512,1024])
+    red_arr = np.zeros((len(N_arr), 5))
+    k_arr   = np.zeros(len(N_arr))
+
+    #Solve using Method for each N, save reduction factors
+    for i, N in tqdm(enumerate(N_arr), desc = "Reduction Factor Calculations for different N"):
+        u_meth, r, k_max, res_arr = method(N, eps, tol, saveResiduals = True)
+        k_arr[i] = int(k_max + 1)
+        for j in range(5):
+            ind = j+k_max-3
+            red_arr[i, j] = res_arr[ind]/res_arr[ind-1]
+
+    #print the tables
+    print(["N", "k_max", "red_{kmax-4}", "red_{kmax-3}", "red_{kmax-2}", "red_{kmax-1}", "red_{kmax}"])
+    for i, N in enumerate(N_arr):
+        print([N, k_arr[i],  *red_arr[i, :]])   
+    
+    fig_sol = plt.figure("{} reduction factors for eps = {}".format(method_string, eps))
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title("{} reduction factors for eps = {}".format(method_string, eps))
+    ax.plot(N_arr, 1-red_arr[:, -1], marker = ".", markersize = 4, linestyle = "None")
+    ax.set_xlabel(r"$N$")
+    ax.set_ylabel(r"$1-red^{k_{max}}$")
+    ax.set_yscale('log')
+    plt.show()
+
+    return
 
 def Inverse():
     """ A function to inspect the properties of matrix Ah
@@ -171,6 +247,31 @@ def testGMRES():
     plt.show()
     return
 
+
+
+def Exercise6():
+    #Jacobi
+    eps = 0.1
+    investigateMethodSolutions(eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi"  )
+    for N in np.array([16,32,64,128,256]):
+        investigateMethodConvergence(N = N, eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
+    investigateMethodReductionFactors(eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
+    return
+
+def Exercise7():
+    #Forward GS
+    return
+
+def Exercise8():
+    #Backward GS
+    return
+
+def Exercise9():
+    #Symmetric GS
+    return
+
+
+
 if __name__=="__main__":
     #investigateEpsilons()
     #investigateAccuracySimpleSolver()
@@ -178,5 +279,7 @@ if __name__=="__main__":
     #Ah, Test = Eigenvalues()
     #investigateConvergenceJacobi()
     #investigateConvergence(eps = 0.1, method = BIMs.Jacobi_Iteration)
-    testGMRES()
-    investigateConvergence(eps = 0.1, method = GMRES.GMRES_method, method_string = "GMRES" )
+    #testGMRES()
+    #investigateMethodSolutions(eps = 0.1, method = GMRES.GMRES_method, method_string = "GMRES" )
+    #investigateMethodConvergence(N = 164, eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
+    investigateMethodReductionFactors(eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
