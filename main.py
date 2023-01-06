@@ -8,7 +8,7 @@ import GMRES
 from tqdm import tqdm
 import matplotlib.cm as cm
 
-NARR = np.array([16,32,64,128,256)
+NARR = np.array([16,32,64,128,256])
 
 def testSimpleSolve():
     """
@@ -216,27 +216,6 @@ def Inverse():
     plt.show()
     return matrixInverse
 
-def Eigenvalues():
-    """ A function to inspect the eigenvalues of matrix A,
-        This is part of exercise 4"""
-    N = 64
-    h = 1/N
-    eps = 0.0001
-    Ah  = discretization.A(N,eps)
-    
-    print(Ah)
-    eigsInfo = sp.linalg.eig(sp.sparse.csr_matrix.toarray(Ah))
-    print(eigsInfo)
-    for i in range(len(eigsInfo[0])):
-                   eigenvalue  = eigsInfo[0][i]
-                   eigenvector = eigsInfo[1][i]
-                   plt.plot(eigenvector,'ko')
-                   stringTitle = "Eigenvalue = " + str(eigenvalue)
-                   plt.title(stringTitle)
-                   plt.show()
-    Ah  = sp.sparse.csr_matrix.toarray(Ah)
-    return Ah, eigsInfo
-
 def testGMRES():
     N = 512
     eps = 0.1
@@ -249,7 +228,51 @@ def testGMRES():
     plt.show()
     return
 
+def EigenvaluePlot(Matrix, show = True):
+    """A function to plot the eigenvalues of a full Matrix
+        and to compute the spectral radius """
+    Eigenvalues = np.linalg.eigvals(Matrix)
+    SpectralRadius = np.max(np.abs(Eigenvalues))
+    plt.scatter(np.real(Eigenvalues),np.imag(Eigenvalues))
+    plt.scatter(np.real(SpectralRadius), np.imag(SpectralRadius),
+                        marker = 'o', color ='red', label = "Spectral Radius = " + str(SpectralRadius))
+    plt.title("Eigenvalue plot")
+    plt.legend()
+    plt.xlabel("Real part")
+    plt.ylabel("Imaginary part")
+    if show:
+        plt.show()
+    return SpectralRadius
 
+def EigenvalueEigenvectorPlot(Matrix, k, show = True):
+    """A function to plot the eigenvalues and eigenvectors of a full Matrix """
+    Eigenvalues, Eigenvectors = np.linalg.eig(Matrix)
+    for i in k:
+        x = np.linspace(0,1,num = int(Matrix.shape[0]))
+        y = Eigenvectors[:,i]
+        plt.scatter(x,y, label = "k = " + str(i) + " eigenvalue = " + str(Eigenvalues[i]))
+    plt.legend()
+    if show:
+        plt.show()
+    return
+
+def Exercise4():
+    k       = np.array([1,3,5])
+    Matrix  = discretization.A(32,0.5).toarray()
+    EigenvalueEigenvectorPlot(Matrix, k, show = True)
+    return
+    
+def Exercise5():
+    eps_arr = np.array([0.01,0.25,0.50,0.75,1.00])
+    N_it    = np.array([8,16,32,64,128,256])
+    print ("{:<5} {:<5} {:<25}".format('eps &','N &','Spectral Radius \\\\ \hline'))
+    for eps in eps_arr:
+        for N in N_it:
+            Matrix = BIMs.B_Jacobi(N,eps)
+            Matrix = Matrix.toarray()
+            SpectralRadius = EigenvaluePlot(Matrix, show = False)
+            print ("{:<5} &{:<5} &{:<25}\\\\ \hline".format(eps,N,np.around(SpectralRadius,6)))
+    return
 
 def Exercise6():
     #Jacobi
@@ -300,4 +323,4 @@ if __name__=="__main__":
     #investigateMethodSolutions(eps = 0.1, method = GMRES.GMRES_method, method_string = "GMRES" )
     #investigateMethodConvergence(N = 164, eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
     #investigateMethodReductionFactors(eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
-    Exercise9()
+    Exercise4()
