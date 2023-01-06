@@ -124,7 +124,7 @@ def investigateMethodSolutions(eps, method, method_string, show = True):
         plt.show()
     return
 
-def investigateMethodConvergence(N, eps, method, method_string, show = True):
+def investigateMethodConvergence(N, eps, method, method_string, ax = None):
     """
     A function to make plots of the accuracy of the numerical solution 
     obtained with a numerical method for different N and eps values
@@ -139,19 +139,20 @@ def investigateMethodConvergence(N, eps, method, method_string, show = True):
     tol     = 1e-6 #must always be 1e-6 as stated in the exercise
 
     #intialize figure and axis
-    fig_sol = plt.figure("{} Convergence for N = {}, eps = {}".format(method_string, N, eps))
-    ax = fig_sol.add_subplot(1, 1, 1)
-    ax.set_title("{} Convergence for N = {}, eps = {}".format(method_string, N, eps))
+    if ax == None:
+        fig_sol = plt.figure("{} Convergence for N = {}, eps = {}".format(method_string, N, eps))
+        ax = fig_sol.add_subplot(1, 1, 1)
+        ax.set_title("{} Convergence for N = {}, eps = {}".format(method_string, N, eps))
 
     #Solve using Method for N, plot solution in the axis
     u_meth, r, k_max, res_arr = method(N, eps, tol, saveResiduals = True)
 
-    ax.plot(res_arr[:k_max+2], marker = ".", markersize = 2, linestyle = "None", label = "N = {}, k_max = {}".format(N, k_max))
+    ax.plot(res_arr[:k_max+2], marker = ".", markersize = 2, linestyle = "None", label = "{} for N = {}, k_max = {}".format(method_string, N, k_max))
     ax.set_xlabel(r"$k$")
     ax.set_ylabel(r"$\frac{||r^k||}{||f^h||}$")
     ax.set_yscale('log')
     ax.legend()
-    if show:
+    if ax == None:
         plt.show()
     return
 
@@ -220,7 +221,7 @@ def testGMRES():
     N = 512
     eps = 0.1
     tol = 1e-6
-    u_GMRES, r, it = GMRES.GMRES_method(N, eps, tol)
+    u_GMRES, r, it = GMRES.GMRES_Iterations(N, eps, tol)
     x = np.linspace(0,1,N+1)
     u = discretization.AddBCtoSol(u_GMRES)
     print(r, it)
@@ -310,6 +311,36 @@ def Exercise9():
     investigateMethodReductionFactors(eps = eps,  method = BIMs.Symmetric_Gauss_Seidel_Iteration, method_string = "Symmetric Gauss Seidel")
     return
 
+def Exercise12():
+    #GMRES
+    eps = 0.1
+    investigateMethodSolutions(eps = eps, method = GMRES.GMRES_Iterations, method_string = "GMRES")
+    for N in NARR:
+        investigateMethodConvergence(N = N, eps = eps,  method = GMRES.GMRES_Iterations, method_string = "GMRES")
+    return
+
+def Exercise13():
+    #GMRES(m)
+    eps = 0.1
+    m_arr = np.array([1,2,4,8,16,32,64,128,256])
+    #for m in m_arr:
+    #    def _GMRES_mFilledIn_Iterations(N, eps, tol, saveResiduals = False):
+    #        return GMRES.GMRES_m_Iterations(N, eps, tol, m=m, saveResiduals = saveResiduals)
+    #    investigateMethodSolutions(eps = eps, method = _GMRES_mFilledIn_Iterations, method_string = "GMRES({})".format(m))
+    for N in NARR[:3]:
+        fig_sol = plt.figure("{} Convergence for N = {}, eps = {}".format("GMRES(m)", N, eps))
+        ax = fig_sol.add_subplot(1, 1, 1)
+        ax.set_title("{} Convergence for N = {}, eps = {}".format("GMRES(m)", N, eps))
+        for m in m_arr[m_arr<N][-4:]:
+            def _GMRES_mFilledIn_Iterations(N, eps, tol, saveResiduals = False):
+                return GMRES.GMRES_m_Iterations(N, eps, tol, m=m, saveResiduals = saveResiduals)
+            investigateMethodConvergence(N = N, eps = eps, method = _GMRES_mFilledIn_Iterations, method_string = "GMRES({})".format(m), ax = ax )
+        plt.show()
+    return
+
+#IDEAS
+#Put all BIM convergence plots in one graph for each N
+#put all GMRES(M) convergence plots in one graph for each N
 
 
 if __name__=="__main__":
@@ -324,3 +355,4 @@ if __name__=="__main__":
     #investigateMethodConvergence(N = 164, eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
     #investigateMethodReductionFactors(eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
     Exercise4()
+    Exercise13()
