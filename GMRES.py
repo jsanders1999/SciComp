@@ -41,7 +41,7 @@ def GMRES_Iterations(N, eps, tol, saveResiduals = False, k = None, u0 = [None]):
             beta = np.linalg.norm(r0_prec)
             y = np.linalg.solve((H[:j+2,:j+1].T).dot(H[:j+2,:j+1]), beta*H[0,:j+1])
             u = u0 + (v_arr[:j+1,:].T).dot(y)
-            return u, np.linalg.norm(A.dot(u)-b), j+1, res_arr
+            return u, np.linalg.norm(A.dot(u)-b)/np.linalg.norm(b), j+1, res_arr
         v_arr[j+1, :] = v_arr[j+1, :]/H[j+1,j] #normalize v_arr[j+1, :]
     #H_k = h[:k+2, :k+1] #when terminated after k steps 
     #y = argmin np.linalg.norm( beta * [1,0,0,0,..,0] - H_k.dot(y))
@@ -53,12 +53,14 @@ def GMRES_Iterations(N, eps, tol, saveResiduals = False, k = None, u0 = [None]):
     return u, res, k, res_arr
 
 def GMRES_m_Iterations(N, eps, tol, m, saveResiduals = False):
-    MAX_REC = 1000
+    MAX_REC = 1000*int(N/m)
     res_arr_full = np.zeros(MAX_REC*m+1)
     k_max_full = 0
     u, r, k_max, res_arr = GMRES_Iterations(N, eps, tol, k = m, saveResiduals = saveResiduals)
     res_arr_full[:m+1]    = res_arr
     k_max_full      += k_max
+    if r < tol:
+        return  u, r, k_max_full, res_arr_full
     
     for rec in range(1, MAX_REC):
         u, r, k_max, res_arr = GMRES_Iterations(N, eps, tol, k = m, saveResiduals = saveResiduals, u0 = u)
