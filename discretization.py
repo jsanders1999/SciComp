@@ -72,7 +72,7 @@ def f(N, eps, BC = [0,0]):
     res[-1] +=  BC[1]*(eps/h**2)
     return res
 
-def simpleSolve(N, eps, BC = [0,0]):
+def simpleSolve(N, eps, BC = [1,0]):
     """
     A function that solves A*u=f by inverting the sparse matrix A.
 

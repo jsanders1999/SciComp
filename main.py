@@ -33,9 +33,9 @@ def investigateEpsilons():
     This is exercise 1.
     """
     #Define constants
-    N = int(50)                    #The number of grid points
+    N = int(128)                    #The number of grid points
     N_exact = int(1e3)
-    eps_arr = np.logspace(-4,0,9)   #An array of epsilon parameters to solve the differential equation with
+    eps_arr = np.logspace(-2,0,6)   #An array of epsilon parameters to solve the differential equation with
     BC = [1, 0]                     #The boundary conditions at x=0 and x=1
 
     #make plots for different eps
@@ -48,6 +48,8 @@ def investigateEpsilons():
         u = discretization.simpleSolve(N, eps, BC)
         p = plt.plot(x,u, marker = ".", linestyle = "None" )
         plt.plot(*discretization.refSol(N_exact, eps), color = p[-1].get_color(), label = r"$\epsilon = {:.1e}$".format(eps))
+    plt.plot(np.linspace(0,1),1 - np.linspace(0,1), label = "y = 1 - x")
+    plt.axis('square')
     plt.legend()
     plt.show()
     return
@@ -58,10 +60,10 @@ def investigateAccuracySimpleSolver():
     This is exercise 2.
     """
     eps_arr = np.logspace(-2,0,5)
-    N_it    = np.array([16,32,64,128,256,512,1024,2048,4096,2*4096, 4*4096, 8*4096, 16*4096, 32*4096, 64*4096 ])
+    N_it    = np.array([16,32,64,128,256,100000,200000])
     BC      = [1,0]
-    print ("{:<5} {:<5} {:} {:<10}".format('eps','N','||u - u_ex||','h'))
-    fig = plt.figure("Mooie plots voor epsilon")
+    print ("{:<10} & {:<10} & {:<15} & {:<10} & {:<5} \\\\ \hline".format('eps','N','$\|u - u_ex\|$','h', 'factor'))
+    fig = plt.figure("Exercise 2")
     ax = fig.add_subplot(1, 1, 1)
     for eps in eps_arr:
         error_arr = np.zeros(N_it.shape)
@@ -70,22 +72,22 @@ def investigateAccuracySimpleSolver():
             numSoly         = discretization.simpleSolve(N,eps,BC)
             refSolx,refSoly = discretization.refSol(N,eps)
             error           = np.max(np.abs(numSoly - refSoly))
-            print ("{:<5} {:<5} {:<25} {:<10}".format(eps,N,error,h))
+            print ("{:<10} & {:<10} & {:<15} & {:<10} & {:<5} \\\\ \hline".format(np.around(eps,5),N,np.around(error,7),h, np.around(error/h,2)))
             error_arr[i] = error
         
-        f = lambda x, a, b : a*x**b
-        cutoff_index = 5
-        popt, pcov = sp.optimize.curve_fit(f, 1/N_it[cutoff_index:], error_arr[cutoff_index:])
-        print(popt)
-        h_arr = np.linspace(1/N_it[-1], 1/N_it[0], 100)
-        p = ax.plot(1/N_it, error_arr, marker = ".", linestyle = "None", label = r"$\epsilon = {:.2f}, b = {:.2f} $".format(eps, popt[1]) )
-        plt.plot(h_arr, f(h_arr, *popt), color = p[-1].get_color())
-    ax.set_yscale('log')
-    ax.set_xscale('log')
-    plt.xlabel(r"$h$")
-    plt.ylabel(r"$||u - u_ex||$")
-    plt.legend()
-    plt.show()
+##        f = lambda x, a, b : a*x**b
+##        cutoff_index = 5
+##        popt, pcov = sp.optimize.curve_fit(f, 1/N_it[cutoff_index:], error_arr[cutoff_index:])
+##        print(popt)
+##        h_arr = np.linspace(1/N_it[-1], 1/N_it[0], 100)
+##        p = ax.plot(1/N_it, error_arr, marker = ".", linestyle = "None", label = r"$\epsilon = {:.2f}, b = {:.2f} $".format(eps, popt[1]) )
+##        plt.plot(h_arr, f(h_arr, *popt), color = p[-1].get_color())
+##    ax.set_yscale('log')
+##    ax.set_xscale('log')
+##    plt.xlabel(r"$h$")
+##    plt.ylabel(r"$||u - u_ex||$")
+##    plt.legend()
+##    plt.show()
     return refSoly, numSoly
 
 
@@ -245,22 +247,37 @@ def EigenvaluePlot(Matrix, show = True):
         plt.show()
     return SpectralRadius
 
-def EigenvalueEigenvectorPlot(Matrix, k, show = True):
+def EigenvalueEigenvectorPlot(Matrix, k, N, eps, show = True):
     """A function to plot the eigenvalues and eigenvectors of a full Matrix """
     Eigenvalues, Eigenvectors = np.linalg.eig(Matrix)
+    idx = np.argsort(Eigenvalues) 
+    Eigenvalues = Eigenvalues[idx]
+    Eigenvectors = Eigenvectors[:,idx]
+    print(Eigenvalues)
+    h  = 1/N
+    x1 = np.linspace(h,1-h,num = int((N-1)))
+    x2 = np.linspace(0,1,num = 5000)
     for i in k:
-        x = np.linspace(0,1,num = int(Matrix.shape[0]))
         y = Eigenvectors[:,i]
-        plt.scatter(x,y, label = "k = " + str(i) + " eigenvalue = " + str(Eigenvalues[i]))
-    plt.legend()
+        if y[0] < 0:
+            y = -y
+        plt.scatter(x1,y, s = 1, label = "k = " + str(i+1) + r", $\lambda$  = "
+                    + str(np.around(Eigenvalues[i],3)) + r" and estimated $\lambda$ = " + str(np.around(4*eps/(h)**2*np.sin(np.pi*(h)*(i+1)/2)**2,3)))
+    for j in k:
+        plt.plot(x2, (1/(np.sqrt(N-1)))*np.sin((j+1)*np.pi*x2)*np.exp(x2/(np.sqrt(3))))
+    plt.title(r"Eigenvalue and eigenvectors plot for N = {} and $\epsilon = {}$".format(N,eps))
+    plt.legend(loc = 'upper left')
     if show:
         plt.show()
-    return
+    return Eigenvalues
 
 def Exercise4():
-    k       = np.array([1,3,5])
-    Matrix  = discretization.A(32,0.5).toarray()
-    EigenvalueEigenvectorPlot(Matrix, k, show = True)
+    N       = 64
+    eps     = 1
+    k       = np.array([1,4,9])
+    Matrix  = discretization.A(N,eps).toarray()
+    EigenvalueEigenvectorPlot(Matrix, k, N, eps, show = True)
+    
     return
     
 def Exercise5():
@@ -355,4 +372,4 @@ if __name__=="__main__":
     #investigateMethodConvergence(N = 164, eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
     #investigateMethodReductionFactors(eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
     Exercise4()
-    Exercise13()
+    #Exercise13()
