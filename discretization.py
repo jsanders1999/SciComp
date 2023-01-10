@@ -50,7 +50,7 @@ def A_Full(N, eps):
     F_hat = 1/D[0,0]*F #since diagonal has the same values everywhere
     return A, D, E, F, E_hat, F_hat
 
-def f(N, eps, BC = [0,0]):
+def f(N, eps, BC = [1,0]):
     """
     A function that resturns the discretization vector for a system with N nodes and parameter epsilon.
 

@@ -7,8 +7,8 @@ import BIMs
 import GMRES
 from tqdm import tqdm
 import matplotlib.cm as cm
+from investigateFunctions import *
 
-NARR = np.array([16,32,64,128,256])
 
 def testSimpleSolve():
     """
@@ -296,62 +296,185 @@ def Exercise6():
     #Jacobi
     eps = 0.1
     investigateMethodSolutions(eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi"  )
-    for N in NARR:
-        investigateMethodConvergence(N = N, eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi" )
+
+    fig_sol = plt.figure("{} Convergence for eps = {}".format("Jacobi", eps))
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title("{} Convergence eps = {}".format("Jacobi", eps))
+    k_max_arr = np.zeros(NARR.shape)
+    for i,N in enumerate(NARR):
+        k_max_arr[i] = investigateMethodConvergence(N = N, eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi", ax_in = ax )
+    ax.set_xscale('log')
+    plt.show()
+    fig_sol = plt.figure("k_max as a function of N")
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title(r"$k_{max}$ as a function of $N$")
+    ax.plot(NARR, k_max_arr, marker = ".", markersize = 4, linestyle = "None")
+    f = lambda x, a, b : a*x**b
+    popt, pcov = sp.optimize.curve_fit(f, NARR, k_max_arr)
+    h_arr = np.linspace(NARR[0], NARR[-1], 100)
+    plt.plot(h_arr, f(h_arr, *popt), label = r"$a = {:.2f}, b = {:.2f} $".format(popt[0], popt[1]))
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel(r'$N$')
+    ax.set_ylabel(r'$k_{max}$')
+    plt.legend()
+    plt.show()
+
     investigateMethodReductionFactors(eps = eps, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
+
     return
 
 def Exercise7():
     #Forward GS
     eps = 0.1
-    investigateMethodSolutions(eps = eps, method = BIMs.Forward_Gauss_Seidel_Iteration, method_string = "Forward Gauss Seidel")
-    for N in NARR:
-        investigateMethodConvergence(N = N, eps = eps, method = BIMs.Forward_Gauss_Seidel_Iteration, method_string = "Forward Gauss Seidel")
-    investigateMethodReductionFactors(eps = eps, method = BIMs.Forward_Gauss_Seidel_Iteration, method_string = "Forward Gauss Seidel")
+    method = BIMs.Forward_Gauss_Seidel_Iteration
+    method_string = "Forward Gauss Seidel"
+    investigateMethodSolutions(eps = eps, method = method , method_string = method_string)
+
+    fig_sol = plt.figure("{} Convergence for eps = {}".format(method_string, eps))
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title("{} Convergence eps = {}".format(method_string, eps))
+    k_max_arr = np.zeros(NARR.shape)
+    for i,N in enumerate(NARR):
+        k_max_arr[i] = investigateMethodConvergence(N = N, eps = eps, method = method , method_string = method_string, ax_in = ax )
+    ax.set_xscale('log')
+    plt.show()
+
+    fig_sol = plt.figure("k_max as a function of N")
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title(r"$k_{max}$ as a function of $N$")
+    ax.plot(NARR, k_max_arr, marker = ".", markersize = 4, linestyle = "None")
+    f = lambda x, a, b : a*x**b
+    popt, pcov = sp.optimize.curve_fit(f, NARR, k_max_arr)
+    h_arr = np.linspace(NARR[0], NARR[-1], 100)
+    plt.plot(h_arr, f(h_arr, *popt), label = r"$a = {:.2f}, b = {:.2f} $".format(popt[0], popt[1]))
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel(r'$N$')
+    ax.set_ylabel(r'$k_{max}$')
+    plt.legend()
+    plt.show()
+
+    investigateMethodReductionFactors(eps = eps,  method = method , method_string = method_string)
     return
 
 def Exercise8():
     #Backward GS
     eps = 0.1
-    investigateMethodSolutions(eps = eps, method = BIMs.Backward_Gauss_Seidel_Iteration, method_string = "Backward Gauss Seidel")
-    for N in NARR:
-        investigateMethodConvergence(N = N, eps = eps, method = BIMs.Backward_Gauss_Seidel_Iteration, method_string = "Backward Gauss Seidel")
-    investigateMethodReductionFactors(eps = eps, method = BIMs.Backward_Gauss_Seidel_Iteration, method_string = "Backward Gauss Seidel")
+    method = BIMs.Backward_Gauss_Seidel_Iteration
+    method_string = "Backward Gauss Seidel"
+    investigateMethodSolutions(eps = eps, method = method , method_string = method_string)
+
+    fig_sol = plt.figure("{} Convergence for eps = {}".format(method_string, eps))
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title("{} Convergence eps = {}".format(method_string, eps))
+    k_max_arr = np.zeros(NARR.shape)
+    for i,N in enumerate(NARR):
+        k_max_arr[i] = investigateMethodConvergence(N = N, eps = eps, method = method , method_string = method_string, ax_in = ax )
+    ax.set_xscale('log')
+    plt.show()
+
+    fig_sol = plt.figure("k_max as a function of N")
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title(r"$k_{max}$ as a function of $N$")
+    ax.plot(NARR, k_max_arr, marker = ".", markersize = 4, linestyle = "None")
+    f = lambda x, a, b : a*x**b
+    popt, pcov = sp.optimize.curve_fit(f, NARR, k_max_arr)
+    h_arr = np.linspace(NARR[0], NARR[-1], 100)
+    plt.plot(h_arr, f(h_arr, *popt), label = r"$a = {:.2f}, b = {:.2f} $".format(popt[0], popt[1]))
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel(r'$N$')
+    ax.set_ylabel(r'$k_{max}$')
+    plt.legend()
+    plt.show()
+
+    investigateMethodReductionFactors(eps = eps,  method = method , method_string = method_string)
     return
 
 def Exercise9():
     #Symmetric GS
     eps = 0.1
-    investigateMethodSolutions(eps = eps, method = BIMs.Symmetric_Gauss_Seidel_Iteration, method_string = "Symmetric Gauss Seidel")
-    for N in NARR:
-        investigateMethodConvergence(N = N, eps = eps,  method = BIMs.Symmetric_Gauss_Seidel_Iteration, method_string = "Symmetric Gauss Seidel")
-    investigateMethodReductionFactors(eps = eps,  method = BIMs.Symmetric_Gauss_Seidel_Iteration, method_string = "Symmetric Gauss Seidel")
-    return
+    method = BIMs.Symmetric_Gauss_Seidel_Iteration
+    method_string = "Symmetric Gauss Seidel"
+    investigateMethodSolutions(eps = eps, method = method , method_string = method_string)
+
+    fig_sol = plt.figure("{} Convergence for eps = {}".format(method_string, eps))
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title("{} Convergence eps = {}".format(method_string, eps))
+    k_max_arr = np.zeros(NARR.shape)
+    for i,N in enumerate(NARR):
+        k_max_arr[i] = investigateMethodConvergence(N = N, eps = eps, method = method , method_string = method_string, ax_in = ax )
+    ax.set_xscale('log')
+    plt.show()
+
+    fig_sol = plt.figure("k_max as a function of N")
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title(r"$k_{max}$ as a function of $N$")
+    ax.plot(NARR, k_max_arr, marker = ".", markersize = 4, linestyle = "None")
+    f = lambda x, a, b : a*x**b
+    popt, pcov = sp.optimize.curve_fit(f, NARR, k_max_arr)
+    h_arr = np.linspace(NARR[0], NARR[-1], 100)
+    plt.plot(h_arr, f(h_arr, *popt), label = r"$a = {:.2f}, b = {:.2f} $".format(popt[0], popt[1]))
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel(r'$N$')
+    ax.set_ylabel(r'$k_{max}$')
+    plt.legend()
+    plt.show()
+
+    investigateMethodReductionFactors(eps = eps,  method = method , method_string = method_string)
 
 def Exercise12():
     #GMRES
     eps = 0.1
-    investigateMethodSolutions(eps = eps, method = GMRES.GMRES_Iterations, method_string = "GMRES")
-    for N in NARR:
-        investigateMethodConvergence(N = N, eps = eps,  method = GMRES.GMRES_Iterations, method_string = "GMRES")
+    investigateMethodSolutions(eps = eps, method = GMRES.GMRES_Iterations, method_string = "Full GMRES")
+
+    fig_sol = plt.figure("{} Convergence for eps = {}".format("Full GMRES", eps))
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title("{} Convergence eps = {}".format("Full GMRES", eps))
+    k_max_arr = np.zeros(NARR.shape)
+    for i,N in enumerate(NARR):
+        k_max_arr[i] = investigateMethodConvergence(N = N, eps = eps, method = GMRES.GMRES_Iterations , method_string = "Full GMRES", ax_in = ax )
+    ax.set_xscale('log')
+    plt.show()
+
+    fig_sol = plt.figure("k_max as a function of N")
+    ax = fig_sol.add_subplot(1, 1, 1)
+    ax.set_title(r"$k_{max}$ as a function of $N$")
+    ax.plot(NARR, k_max_arr, marker = ".", markersize = 4, linestyle = "None")
+    f = lambda x, a, b : a*x**b
+    popt, pcov = sp.optimize.curve_fit(f, NARR, k_max_arr)
+    h_arr = np.linspace(NARR[0], NARR[-1], 100)
+    plt.plot(h_arr, f(h_arr, *popt), label = r"$a = {:.2f}, b = {:.2f} $".format(popt[0], popt[1]))
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel(r'$N$')
+    ax.set_ylabel(r'$k_{max}$')
+    plt.legend()
+    plt.show()
+
     return
 
 def Exercise13():
     #GMRES(m)
     eps = 0.1
     m_arr = np.array([1,2,4,8,16,32,64,128,256])
-    #for m in m_arr:
-    #    def _GMRES_mFilledIn_Iterations(N, eps, tol, saveResiduals = False):
-    #        return GMRES.GMRES_m_Iterations(N, eps, tol, m=m, saveResiduals = saveResiduals)
-    #    investigateMethodSolutions(eps = eps, method = _GMRES_mFilledIn_Iterations, method_string = "GMRES({})".format(m))
-    for N in NARR[:3]:
+    #This first for loop raises errors if you do not adjust m_arr and NARR for each run.
+    for m in m_arr:
+        def _GMRES_mFilledIn_Iterations(N, eps, tol, saveResiduals = True):
+            return GMRES.GMRES_m_Iterations(N, eps, tol, m=m, saveResiduals = saveResiduals)
+        investigateMethodSolutions(eps = eps, method = _GMRES_mFilledIn_Iterations, method_string = "GMRES({})".format(m))
+        
+    m_arr = np.array([1,2,4,8,16,32,64,128,256,512])
+    for N in NARR:
         fig_sol = plt.figure("{} Convergence for N = {}, eps = {}".format("GMRES(m)", N, eps))
         ax = fig_sol.add_subplot(1, 1, 1)
         ax.set_title("{} Convergence for N = {}, eps = {}".format("GMRES(m)", N, eps))
-        for m in m_arr[m_arr<N][-4:]:
-            def _GMRES_mFilledIn_Iterations(N, eps, tol, saveResiduals = False):
+        for m in m_arr[m_arr<N][-5:]:
+            def _GMRES_mFilledIn_Iterations(N, eps, tol, saveResiduals = True):
                 return GMRES.GMRES_m_Iterations(N, eps, tol, m=m, saveResiduals = saveResiduals)
-            investigateMethodConvergence(N = N, eps = eps, method = _GMRES_mFilledIn_Iterations, method_string = "GMRES({})".format(m), ax = ax )
+            investigateMethodConvergence(N = N, eps = eps, method = _GMRES_mFilledIn_Iterations, method_string = "GMRES({})".format(m), ax_in = ax )
         plt.show()
     return
 
@@ -373,3 +496,6 @@ if __name__=="__main__":
     #investigateMethodReductionFactors(eps = 0.1, method = BIMs.Jacobi_Iteration, method_string = "Jacobi")
     Exercise4()
     #Exercise13()
+    #investigateAccuracySimpleSolver()
+    #Exercise8()
+    #Exercise9()
