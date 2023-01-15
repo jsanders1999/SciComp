@@ -35,7 +35,8 @@ def A_2D(N):
         D[i,j] = 0 
     #print(h**2*L.toarray())
     #print(h*D.toarray())
-    return -L + D
+    A = -L + D
+    return A, L, D
 
 def f(N):
     """
@@ -230,6 +231,43 @@ def GMRES_m_Iterations_2D(N, tol, m, saveResiduals = True):
     return  u, r, k_max_full, res_arr_full
 
 def Exercise14_10():
+    N       = 8
+    A,L,D  = A_2D(N)
+    A = A.toarray()
+    D = D.toarray()
+    Matrix = np.identity((N-1)**2) - 1/A[0,0]*A
+    Eigenvalues = np.linalg.eigvals(Matrix)
+    idx = np.argmax(np.abs(Eigenvalues))
+    plt.scatter(np.real(Eigenvalues),np.imag(Eigenvalues))
+    plt.scatter(np.real(Eigenvalues[idx]), np.imag(Eigenvalues[idx]),
+                        marker = 'o', color ='red', label = "Spectral Radius = " + str(np.abs(Eigenvalues[idx])))
+    plt.title(r"Eigenvalue plot together with an ellipse for N = {}".format(N))
+    plt.legend()
+    plt.xlabel("Real part")
+    plt.ylabel("Imaginary part")
+
+    #MinimumEigv = Eigenvalues[np.argmin(Eigenvalues)]
+    #MaximumEigv = Eigenvalues[np.argmax(Eigenvalues)]
+    MaximumRealpart = np.max(np.real(Eigenvalues))
+    MinimumRealpart = np.min(np.real(Eigenvalues))
+    MaximumImagpart = np.max(np.imag(Eigenvalues))
+    MinimumImagpart = np.min(np.imag(Eigenvalues))
+
+    u= np.real((MinimumRealpart + MaximumRealpart)/2)    #x-position of the center
+    v= np.imag((MinimumImagpart + MaximumImagpart)/2)   #y-position of the center
+    a= (u - MaximumRealpart)     #radius on the x-axis
+    b= 0.125      #radius on the y-axis
+    
+    u = np.around(u,3)
+    v = np.around(v,3)
+    coef1 = np.around((1/a)**2,3)
+    coef2 = np.around((1/b)**2,3)
+    t = np.linspace(0, 2*np.pi, 5000)
+    plt.plot( u+a*np.cos(t) , v+b*np.sin(t), label = r"{} (x-{})^2+ {} (y-{})^2".format(coef1,u,coef2,v))
+    plt.grid(color='black',linestyle='--')
+    plt.legend(loc = 'lower center')
+    plt.show()
+
     return
 
 def Exercise14_11():
@@ -289,4 +327,4 @@ def Exercise14_13():
 if __name__ == "__main__":
     #TestA()
     #Exercise14_12()
-    Exercise14_13()
+    Exercise14_10()
